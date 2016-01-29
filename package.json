@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/kwhitejr/passport-demo/issues"
   },
-  "homepage": "https://github.com/kwhitejr/passport-demo#readme"
+  "homepage": "https://github.com/kwhitejr/passport-demo#readme",
+  "dependencies": {
+    "express": "^4.13.4"
+  }
 }
