@@ -2,6 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
+var session = require('express-session');
 
 var CONFIG = require('./config');
 
@@ -11,18 +12,38 @@ app.set('views', 'views');
 app.set('view engine', 'jade');
 
 app.use(bodyParser.urlencoded({extended: false}));
+app.use(session(CONFIG.SESSION));
+
 
 passport.use(new LocalStrategy(
   function (username, password, done) {
     var isAuthenticated = authenticate(username, password);
     if (! isAuthenticated) {
-      return done(null, false);
+      return done(null, false); // No error, but credentials fail.
     }
-    return done(null, {}); // good to go!!
+    var user = {
+      name: "Kevin",
+      role: "ADMIN",
+      color: "blue"
+    };
+    return done(null, user); // good to go!!
   }
 ));
 
+passport.serializeUser(function (user, done) {
+  return done(null, user);
+});
+
+passport.deserializeUser(function (user, done) {
+  return done(null, user);
+});
+
 app.use(passport.initialize());
+app.use(passport.session());
+
+// app.use(function (req, res, next) {
+//   console.log(req.isAuthenticated());
+// });
 
 app.get('/login', function (req, res) {
   res.render('login');
@@ -30,7 +51,6 @@ app.get('/login', function (req, res) {
 
 app.post('/login',
   passport.authenticate('local', {
-    session: false,
     successRedirect: '/secret',
     failureRedirect: '/login'
   })
@@ -48,9 +68,20 @@ function authenticate(username, password) {
 
 }
 
-app.get('/secret', function (req, res) {
-  res.render('secret');
-});
+function isAuthenticated (req, res, next) {
+  console.log(req.user);
+  if (! req.isAuthenticated()) {
+    return res.redirect('/login');
+  }
+  return next();
+}
+
+app.get('/secret',
+  isAuthenticated,
+  function (req, res) {
+    res.render('secret');
+  }
+);
 
 var server = app.listen(CONFIG.PORT, function () {
   console.log('listening on port ' + CONFIG.PORT);
