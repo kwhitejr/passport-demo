@@ -1,6 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
 
 var CONFIG = require('./config');
 
@@ -11,18 +12,29 @@ app.set('view engine', 'jade');
 
 app.use(bodyParser.urlencoded({extended: false}));
 
+passport.use(new LocalStrategy(
+  function (username, password, done) {
+    var isAuthenticated = authenticate(username, password);
+    if (! isAuthenticated) {
+      return done(null, false);
+    }
+    return done(null, {}); // good to go!!
+  }
+));
+
+app.use(passport.initialize());
+
 app.get('/login', function (req, res) {
   res.render('login');
 });
 
-app.post('/login', function (req, res) {
-  var isAuthenticated = authenticate(req.body.username, req.body.password);
-  if (!isAuthenticated) {
-    console.log('You are not authenticated');
-    return res.redirect('/login');
-  }
-  res.redirect('/secret');
-});
+app.post('/login',
+  passport.authenticate('local', {
+    session: false,
+    successRedirect: '/secret',
+    failureRedirect: '/login'
+  })
+);
 
 function authenticate(username, password) {
   var CREDENTIALS = CONFIG.CREDENTIALS;
