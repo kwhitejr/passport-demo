@@ -1,4 +1,6 @@
 var express = require('express');
+var bodyParser = require('body-parser');
+var passport = require('passport');
 
 var CONFIG = require('./config');
 
@@ -7,14 +9,32 @@ var app = express();
 app.set('views', 'views');
 app.set('view engine', 'jade');
 
+app.use(bodyParser.urlencoded({extended: false}));
+
 app.get('/login', function (req, res) {
   res.render('login');
 });
 
 app.post('/login', function (req, res) {
-  //TODO: implement login
-  res.send('logging in...');
+  var isAuthenticated = authenticate(req.body.username, req.body.password);
+  if (!isAuthenticated) {
+    console.log('You are not authenticated');
+    return res.redirect('/login');
+  }
+  res.redirect('/secret');
 });
+
+function authenticate(username, password) {
+  var CREDENTIALS = CONFIG.CREDENTIALS;
+  var USERNAME = CREDENTIALS.USERNAME;
+  var PASSWORD = CREDENTIALS.PASSWORD;
+
+  return (
+    username === USERNAME &&
+    password === PASSWORD
+  );
+
+}
 
 app.get('/secret', function (req, res) {
   res.render('secret');
