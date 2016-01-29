@@ -1,9 +1,12 @@
 var express = require('express');
 
+var CONFIG = require('./config');
+console.log(CONFIG);
+
 var app = express();
 
-var PORT = 3000;
 
-var server = app.listen(PORT, function () {
-  console.log('listening on port ' + PORT);
+
+var server = app.listen(CONFIG.PORT, function () {
+  console.log('listening on port ' + CONFIG.PORT);
 });
