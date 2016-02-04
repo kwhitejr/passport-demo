@@ -79,9 +79,14 @@ function isAuthenticated (req, res, next) {
 app.get('/secret',
   isAuthenticated,
   function (req, res) {
-    res.render('secret');
+    res.render('secret', {role: req.user.role});
   }
 );
+
+app.get('/logout', function (req, res) {
+  req.logout();
+  res.redirect('/login');
+});
 
 var server = app.listen(CONFIG.PORT, function () {
   console.log('listening on port ' + CONFIG.PORT);
